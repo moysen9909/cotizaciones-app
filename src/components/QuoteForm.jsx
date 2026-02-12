@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Save, Trash2, Lock, Unlock, Globe, ImagePlus, X, EyeOff, FileDown, Copy, Plus, Minus } from 'lucide-react';
 import {
   MATERIALS, MATERIAL_DENSITIES, PRICE_LIST,
@@ -9,6 +9,7 @@ import {
   CONVERSIONES, COMPLEMENTOS,
 } from '../data/constants';
 import { generateQuotePDF } from '../utils/generatePDF';
+import { DROPDOWN_LABELS } from '../data/translations';
 
 /* ── Reusable sub-components ── */
 
@@ -85,6 +86,16 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef(null);
   const isManager = role === 'manager';
+
+  const tipoOpts = useMemo(() => TIPO_OPTIONS.map(v => ({ value: v, label: DROPDOWN_LABELS.tipo[lang]?.[v] || v })), [lang]);
+  const fleteOpts = useMemo(() => FLETE_OPTIONS.map(v => ({ value: v, label: DROPDOWN_LABELS.flete[lang]?.[v] || v })), [lang]);
+  const unidadOpts = useMemo(() => CANTIDAD_UNIDAD_OPTIONS.map(v => ({ value: v, label: DROPDOWN_LABELS.cantidadUnidad[lang]?.[v] || v })), [lang]);
+  const convOpts = useMemo(() => CONVERSIONES.map(c => ({
+    value: c.nombre,
+    label: isManager
+      ? `${DROPDOWN_LABELS.conversiones[lang]?.[c.nombre] || c.nombre} ($${c.precio})`
+      : DROPDOWN_LABELS.conversiones[lang]?.[c.nombre] || c.nombre,
+  })), [lang, isManager]);
 
   useEffect(() => { setForm(quote); }, [quote]);
   const update = useCallback((field, value) => {
@@ -367,10 +378,10 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
             </div>
             <InputField label={t.noCliente} value={form.noCliente ? `#${form.noCliente}` : 'Auto'} readOnly onChange={() => {}} />
             <InputField label={t.producto} value={form.producto} onChange={(v) => update('producto', v)} />
-            <SelectField label={t.tipo} value={form.tipo} onChange={(v) => update('tipo', v)} options={TIPO_OPTIONS} error={errors.tipo} />
+            <SelectField label={t.tipo} value={form.tipo} onChange={(v) => update('tipo', v)} options={tipoOpts} error={errors.tipo} />
             <div className="grid grid-cols-2 gap-2">
               <InputField label={t.cantidad} value={form.cantidadValor} onChange={(v) => update('cantidadValor', v)} type="number" error={errors.cantidadValor} />
-              <SelectField label={t.unidad} value={form.cantidadUnidad} onChange={(v) => update('cantidadUnidad', v)} options={CANTIDAD_UNIDAD_OPTIONS} />
+              <SelectField label={t.unidad} value={form.cantidadUnidad} onChange={(v) => update('cantidadUnidad', v)} options={unidadOpts} />
             </div>
             <InputField label={t.cantidadKg} value={form.cantidadKg?.toFixed(4) || '0'} readOnly onChange={() => {}} />
             {form.cantidadUnidad === 'CAJAS' && (
@@ -381,7 +392,7 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
                 (parseFloat(form.cantidadValor) || 0) * (parseFloat(form.cantidadPorCaja) || 0)
               } readOnly onChange={() => {}} />
             )}
-            <SelectField label={t.flete} value={form.flete} onChange={(v) => update('flete', v)} options={FLETE_OPTIONS} />
+            <SelectField label={t.flete} value={form.flete} onChange={(v) => update('flete', v)} options={fleteOpts} />
             <PriceField label={t.precioFlete} value={form.precioFlete} readOnly isManager={isManager} onChange={() => {}} />
           </div>
         </div>
@@ -436,6 +447,18 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
               </div>
             );
           })()}
+        </div>
+
+        {/* Notes */}
+        <div className={sectionClass}>
+          <h3 className={headingClass}>{t.notas}</h3>
+          <textarea
+            value={form.notas || ''}
+            onChange={(e) => update('notas', e.target.value)}
+            placeholder={t.notasPlaceholder}
+            rows={3}
+            className="w-full px-4 py-3 bg-white border border-almond hover:border-mist/50 rounded-xl text-sm text-noir placeholder-mist/40 focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy/30 transition-all shadow-sm resize-y"
+          />
         </div>
 
         {/* Dimensions */}
@@ -627,7 +650,7 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
           <div className="grid grid-cols-2 gap-4">
             <SelectField label={t.conversion} value={form.conversion}
               onChange={(v) => { const conv = CONVERSIONES.find(c=>c.nombre===v); update('conversion',v); if(conv) update('conversionPrecio',conv.precio); }}
-              options={isManager ? CONVERSIONES.map(c=>({value:c.nombre,label:`${c.nombre} ($${c.precio})`})) : CONVERSIONES.map(c=>({value:c.nombre,label:c.nombre}))} />
+              options={convOpts} />
             <PriceField label={t.dolarMillar} value={form.conversionPrecio||0} readOnly isManager={isManager} onChange={()=>{}} />
           </div>
         </div>

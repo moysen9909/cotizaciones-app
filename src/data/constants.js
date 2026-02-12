@@ -245,6 +245,7 @@ export const EMPTY_COTIZACION = {
   numCajas: '',
   tipoCambio: 18,
   imagenes: [],
+  notas: '',
   createdByRole: 'user',
   createdAt: '',
 };

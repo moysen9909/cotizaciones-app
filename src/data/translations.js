@@ -115,6 +115,8 @@ export const translations = {
     nuevaCotizacion: 'Nueva cotización',
     sinCliente: 'Sin cliente',
     cotizacion: 'Cotización',
+    notas: 'Notas',
+    notasPlaceholder: 'Agrega notas o comentarios sobre esta cotización...',
     // Footer
     footerSlogan: 'Multibolsas Plasticas® — Tu marca lo merece!',
   },
@@ -234,7 +236,55 @@ export const translations = {
     nuevaCotizacion: 'New quote',
     sinCliente: 'No customer',
     cotizacion: 'Quote',
+    notas: 'Notes',
+    notasPlaceholder: 'Add notes or comments about this quote...',
     // Footer
     footerSlogan: 'Multibolsas Plasticas® — Your brand deserves it!',
+  },
+};
+
+// Bilingual dropdown labels (value stays the same, label changes with language)
+export const DROPDOWN_LABELS = {
+  tipo: {
+    ES: { BOLSA: 'BOLSA', POUCH: 'POUCH', ROLLO: 'ROLLO', MANGA: 'MANGA', 'LAMINACIÓN': 'LAMINACIÓN' },
+    EN: { BOLSA: 'BAG', POUCH: 'POUCH', ROLLO: 'ROLL', MANGA: 'SLEEVE', 'LAMINACIÓN': 'LAMINATION' },
+  },
+  flete: {
+    ES: { 'FOB PLANTA': 'FOB PLANTA', 'FOB CLIENTE': 'FOB CLIENTE', LAREDO: 'LAREDO', CLIENTE: 'CLIENTE' },
+    EN: { 'FOB PLANTA': 'FOB PLANT', 'FOB CLIENTE': 'FOB CUSTOMER', LAREDO: 'LAREDO', CLIENTE: 'CUSTOMER' },
+  },
+  cantidadUnidad: {
+    ES: { MILLARES: 'MILLARES', PIEZAS: 'PIEZAS', CAJAS: 'CAJAS' },
+    EN: { MILLARES: 'THOUSANDS', PIEZAS: 'PIECES', CAJAS: 'BOXES' },
+  },
+  conversiones: {
+    ES: {
+      'EN POUCH DE TRASLAPE': 'EN POUCH DE TRASLAPE',
+      'EN POUCH DE 2 O 3 SELLOS': 'EN POUCH DE 2 O 3 SELLOS',
+      'EN POUCH STAND-UP': 'EN POUCH STAND-UP',
+      'EN POUCH DOY PACK': 'EN POUCH DOY PACK',
+      'BOLSEO STD': 'BOLSEO STD',
+      'BOLSEO ESPECIALIDAD': 'BOLSEO ESPECIALIDAD',
+      'FLAT BUTTOM': 'FLAT BOTTOM',
+      'WICKET': 'WICKET',
+    },
+    EN: {
+      'EN POUCH DE TRASLAPE': 'OVERLAP POUCH',
+      'EN POUCH DE 2 O 3 SELLOS': '2 OR 3 SEAL POUCH',
+      'EN POUCH STAND-UP': 'STAND-UP POUCH',
+      'EN POUCH DOY PACK': 'DOY PACK POUCH',
+      'BOLSEO STD': 'STD BAGGING',
+      'BOLSEO ESPECIALIDAD': 'SPECIALTY BAGGING',
+      'FLAT BUTTOM': 'FLAT BOTTOM',
+      'WICKET': 'WICKET',
+    },
+  },
+  complementos: {
+    ES: {
+      pcr: 'PCR', d2w: 'D2W', pigmento: 'Pigmento', tintaEspecial: 'Tinta Especial', plastaMayor: 'Plasta Mayor',
+    },
+    EN: {
+      pcr: 'PCR', d2w: 'D2W', pigmento: 'Pigment', tintaEspecial: 'Special Ink', plastaMayor: 'Overprint',
+    },
   },
 };

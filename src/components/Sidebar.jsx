@@ -99,11 +99,12 @@ export default function Sidebar({ quotes, clients, activeId, onSelect, onNewQuot
       </div>
 
       {/* Buttons */}
-      <div className="p-3 border-b border-ivory/8 flex gap-2">
-        <button onClick={() => setShowAddClient(!showAddClient)}
-          className="flex-1 py-2.5 bg-gradient-to-r from-navy to-navy/80 hover:from-navy/90 hover:to-navy/70 text-ivory rounded-xl font-semibold flex items-center justify-center gap-1.5 transition-all text-xs border border-ivory/10 hover:border-ivory/20 shadow-sm">
-          <UserPlus className="w-3.5 h-3.5" /> {t.nuevoClienteBtn}
-        </button>
+      <div className="p-3 border-b border-ivory/8 space-y-2">
+        <div className="flex gap-2">
+          <button onClick={() => setShowAddClient(!showAddClient)}
+            className="flex-1 py-2.5 bg-gradient-to-r from-navy to-navy/80 hover:from-navy/90 hover:to-navy/70 text-ivory rounded-xl font-semibold flex items-center justify-center gap-1.5 transition-all text-xs border border-ivory/10 hover:border-ivory/20 shadow-sm">
+            <UserPlus className="w-3.5 h-3.5" /> {t.nuevoClienteBtn}
+          </button>
         <button onClick={onExportExcel} title={t.descargarExcel}
           className="px-3.5 py-2.5 bg-emerald-600/80 hover:bg-emerald-500/80 text-white rounded-xl flex items-center justify-center transition-all shadow-sm hover:shadow-md">
           <Download className="w-3.5 h-3.5" />
@@ -115,6 +116,11 @@ export default function Sidebar({ quotes, clients, activeId, onSelect, onNewQuot
               onChange={(e) => { if (e.target.files[0]) { onImportExcel(e.target.files[0]); e.target.value = ''; } }} />
           </label>
         )}
+        </div>
+        <button onClick={() => onNewQuote(null)}
+          className="w-full py-2.5 bg-gradient-to-r from-emerald-600/80 to-emerald-600/60 hover:from-emerald-500/80 hover:to-emerald-500/60 text-white rounded-xl font-semibold flex items-center justify-center gap-1.5 transition-all text-xs border border-emerald-400/20 hover:border-emerald-400/30 shadow-sm">
+          <Plus className="w-3.5 h-3.5" /> {t.nuevaCotizacion}
+        </button>
       </div>
 
       {/* Add client input */}
