@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Lock, LogIn } from 'lucide-react';
 
 const CREDENTIALS = {
-  mitch2026: 'user',
+  mba2026: 'user',
   manager2024: 'manager',
 };
 
