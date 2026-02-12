@@ -12,12 +12,12 @@ import { generateQuotePDF } from '../utils/generatePDF';
 
 /* ── Reusable sub-components ── */
 
-function SelectField({ label, value, onChange, options, disabled }) {
+function SelectField({ label, value, onChange, options, disabled, error }) {
   return (
     <div>
-      <label className="block text-[11px] font-semibold text-navy/50 mb-1.5 uppercase tracking-wider">{label}</label>
+      <label className={`block text-[11px] font-semibold mb-1.5 uppercase tracking-wider ${error ? 'text-red-500' : 'text-navy/50'}`}>{label}{error && ' *'}</label>
       <select value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled}
-        className="w-full px-3 py-2.5 bg-white border border-almond hover:border-mist/50 rounded-xl text-noir text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy/30 disabled:opacity-50 disabled:cursor-not-allowed appearance-none transition-all shadow-sm">
+        className={`w-full px-3 py-2.5 bg-white border rounded-xl text-noir text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy/30 disabled:opacity-50 disabled:cursor-not-allowed appearance-none transition-all shadow-sm ${error ? 'border-red-400 ring-1 ring-red-200' : 'border-almond hover:border-mist/50'}`}>
         <option value="">--</option>
         {options.map((opt) => (
           <option key={typeof opt === 'string' ? opt : opt.value} value={typeof opt === 'string' ? opt : opt.value}>
@@ -29,14 +29,14 @@ function SelectField({ label, value, onChange, options, disabled }) {
   );
 }
 
-function InputField({ label, value, onChange, type = 'text', disabled, readOnly, suffix }) {
+function InputField({ label, value, onChange, type = 'text', disabled, readOnly, suffix, error }) {
   return (
     <div>
-      <label className="block text-[11px] font-semibold text-navy/50 mb-1.5 uppercase tracking-wider">{label}</label>
+      <label className={`block text-[11px] font-semibold mb-1.5 uppercase tracking-wider ${error ? 'text-red-500' : 'text-navy/50'}`}>{label}{error && ' *'}</label>
       <div className="relative">
         <input type={type} value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} readOnly={readOnly}
           className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm ${
-            readOnly ? 'bg-almond/40 border-almond text-mist cursor-not-allowed' : 'bg-white border-almond hover:border-mist/50 text-noir'
+            readOnly ? 'bg-almond/40 border-almond text-mist cursor-not-allowed' : error ? 'bg-white border-red-400 ring-1 ring-red-200 text-noir' : 'bg-white border-almond hover:border-mist/50 text-noir'
           }`} />
         {suffix && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-mist/70 uppercase">{suffix}</span>}
       </div>
@@ -82,11 +82,29 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
   const [form, setForm] = useState(quote);
   const [previewImg, setPreviewImg] = useState(null);
   const [newClientInput, setNewClientInput] = useState('');
+  const [errors, setErrors] = useState({});
   const fileInputRef = useRef(null);
   const isManager = role === 'manager';
 
   useEffect(() => { setForm(quote); }, [quote]);
-  const update = useCallback((field, value) => { setForm((prev) => ({ ...prev, [field]: value })); }, []);
+  const update = useCallback((field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: false }));
+  }, []);
+
+  const validate = () => {
+    const e = {};
+    if (!form.cantidadValor || parseFloat(form.cantidadValor) <= 0) e.cantidadValor = true;
+    if (!form.ancho || parseFloat(form.ancho) <= 0) e.ancho = true;
+    if (!form.largo || parseFloat(form.largo) <= 0) e.largo = true;
+    if (!form.calibreValor || parseFloat(form.calibreValor) <= 0) e.calibreValor = true;
+    if (!form.clienteId) e.clienteId = true;
+    if (!form.tipo) e.tipo = true;
+    if (!form.material) e.material = true;
+    if (form.noTintas === undefined || form.noTintas === '' || parseInt(form.noTintas) < 0) e.noTintas = true;
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   // ── Image handlers ──
   const handleImageUpload = (e) => {
@@ -237,9 +255,15 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
     }
   };
 
-  const handleSave = () => { onSave({ ...form, updatedAt: new Date().toISOString() }); };
-  const handleDownloadPDF = (pdfLang) => { generateQuotePDF(form, isManager, pdfLang); };
-  const handleDuplicate = () => { handleSave(); onDuplicate(form.id); };
+  const handleSave = () => {
+    if (!validate()) return;
+    onSave({ ...form, updatedAt: new Date().toISOString() });
+  };
+  const handleDownloadPDF = (pdfLang) => {
+    if (!validate()) return;
+    generateQuotePDF(form, isManager, pdfLang);
+  };
+  const handleDuplicate = () => { handleSave(); if (Object.keys(errors).length === 0) onDuplicate(form.id); };
 
   const sectionClass = "bg-white rounded-2xl p-6 border border-almond/80 shadow-sm hover:shadow-md transition-shadow";
   const headingClass = "text-xs font-bold text-navy/70 mb-5 uppercase tracking-[0.15em] flex items-center gap-2 after:content-[''] after:flex-1 after:h-px after:bg-almond";
@@ -292,6 +316,18 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
           </div>
         </div>
 
+        {/* Validation error banner */}
+        {Object.keys(errors).length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-3 flex items-center gap-3 shadow-sm animate-pulse">
+            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-red-500 font-bold text-sm">!</span>
+            </div>
+            <p className="text-sm text-red-600 font-medium">
+              {lang === 'EN' ? 'Please fill in all required fields (marked in red) to save or generate the quote.' : 'Llena todos los campos obligatorios (marcados en rojo) para guardar o generar la cotización.'}
+            </p>
+          </div>
+        )}
+
         {/* Basic Info */}
         <div className={sectionClass}>
           <h3 className={headingClass}>{t.infoGeneral}</h3>
@@ -299,14 +335,15 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
             <InputField label={t.registro} value={form.registro} onChange={(v) => update('registro', v)} />
             {/* Cliente selector */}
             <div>
-              <label className="block text-xs font-medium text-mist mb-1">{t.cliente}</label>
+              <label className={`block text-xs font-medium mb-1 ${errors.clienteId ? 'text-red-500' : 'text-mist'}`}>{t.cliente}{errors.clienteId ? ' *' : ''}</label>
               <select value={form.clienteId || ''}
                 onChange={(e) => {
                   const cid = e.target.value;
                   const c = clients.find((x) => x.id === cid);
                   setForm((prev) => ({ ...prev, clienteId: c?.id || '', cliente: c?.nombre || '', noCliente: c ? String(c.numero) : '' }));
+                  setErrors((prev) => ({ ...prev, clienteId: false }));
                 }}
-                className="w-full px-3 py-2 bg-almond border border-mist/30 rounded-lg text-noir text-sm focus:outline-none focus:ring-2 focus:ring-navy/50 appearance-none">
+                className={`w-full px-3 py-2 bg-almond border rounded-lg text-noir text-sm focus:outline-none focus:ring-2 focus:ring-navy/50 appearance-none ${errors.clienteId ? 'border-red-400 ring-1 ring-red-200' : 'border-mist/30'}`}>
                 <option value="">{t.seleccionarCliente}</option>
                 {clients.map((c) => <option key={c.id} value={c.id}>#{c.numero} — {c.nombre}</option>)}
               </select>
@@ -330,9 +367,9 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
             </div>
             <InputField label={t.noCliente} value={form.noCliente ? `#${form.noCliente}` : 'Auto'} readOnly onChange={() => {}} />
             <InputField label={t.producto} value={form.producto} onChange={(v) => update('producto', v)} />
-            <SelectField label={t.tipo} value={form.tipo} onChange={(v) => update('tipo', v)} options={TIPO_OPTIONS} />
+            <SelectField label={t.tipo} value={form.tipo} onChange={(v) => update('tipo', v)} options={TIPO_OPTIONS} error={errors.tipo} />
             <div className="grid grid-cols-2 gap-2">
-              <InputField label={t.cantidad} value={form.cantidadValor} onChange={(v) => update('cantidadValor', v)} type="number" />
+              <InputField label={t.cantidad} value={form.cantidadValor} onChange={(v) => update('cantidadValor', v)} type="number" error={errors.cantidadValor} />
               <SelectField label={t.unidad} value={form.cantidadUnidad} onChange={(v) => update('cantidadUnidad', v)} options={CANTIDAD_UNIDAD_OPTIONS} />
             </div>
             <InputField label={t.cantidadKg} value={form.cantidadKg?.toFixed(4) || '0'} readOnly onChange={() => {}} />
@@ -420,8 +457,8 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <InputField label={t.ancho} value={form.ancho} onChange={(v) => update('ancho', v)} type="number" suffix={isInches ? 'in' : 'cm'} />
-            <InputField label={t.largo} value={form.largo} onChange={(v) => update('largo', v)} type="number" suffix={isInches ? 'in' : 'cm'} />
+            <InputField label={t.ancho} value={form.ancho} onChange={(v) => update('ancho', v)} type="number" suffix={isInches ? 'in' : 'cm'} error={errors.ancho} />
+            <InputField label={t.largo} value={form.largo} onChange={(v) => update('largo', v)} type="number" suffix={isInches ? 'in' : 'cm'} error={errors.largo} />
             <InputField label={t.fuelle} value={form.fuelle} onChange={(v) => update('fuelle', v)} type="number" suffix={isInches ? 'in' : 'cm'} />
             <InputField label={t.lengua} value={form.lengua} onChange={(v) => update('lengua', v)} type="number" suffix={isInches ? 'in' : 'cm'} />
           </div>
@@ -438,15 +475,15 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
           <h3 className={headingClass}>{t.calibreMaterial}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="grid grid-cols-2 gap-2">
-              <InputField label={t.calibre} value={form.calibreValor} onChange={(v) => update('calibreValor', v)} type="number" />
+              <InputField label={t.calibre} value={form.calibreValor} onChange={(v) => update('calibreValor', v)} type="number" error={errors.calibreValor} />
               <SelectField label={t.unidad} value={form.calibreUnidad} onChange={(v) => update('calibreUnidad', v)} options={CALIBRE_UNITS} />
             </div>
             {form.calibreValor && form.calibreUnidad !== 'gauge' && (
               <InputField label={t.igualGauge} value={form.calibreGauge?.toFixed(1) || '0'} readOnly onChange={() => {}} />
             )}
-            <SelectField label={t.material} value={form.material} onChange={(v) => update('material', v)} options={MATERIALS} />
+            <SelectField label={t.material} value={form.material} onChange={(v) => update('material', v)} options={MATERIALS} error={errors.material} />
             <InputField label={t.densidad} value={form.densidad} onChange={(v) => update('densidad', v)} type="number" />
-            <InputField label={t.noTintas} value={form.noTintas} onChange={(v) => update('noTintas', parseInt(v) || 0)} type="number" />
+            <InputField label={t.noTintas} value={form.noTintas} onChange={(v) => update('noTintas', parseInt(v) || 0)} type="number" error={errors.noTintas} />
           </div>
           {form.calibreGauge > 0 && (form.calibreGauge < 100 || form.calibreGauge > 600) && (
             <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">{t.rangoRecomendado}: 100-600 {t.gauge} ({t.actual}: {form.calibreGauge.toFixed(1)})</div>
