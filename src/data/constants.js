@@ -137,18 +137,13 @@ export const CONVERSIONES = [
 ];
 
 export const FLETE_OPTIONS = [
-  'FOB PLANTA',
-  'FOB CLIENTE',
-  'LAREDO',
-  'CLIENTE',
+  'FOB LAREDO',
 ];
 
 export const TIPO_OPTIONS = [
   'BOLSA',
   'POUCH',
-  'ROLLO',
-  'MANGA',
-  'LAMINACIÓN',
+  'PELICULA',
 ];
 
 export const CANTIDAD_UNIDAD_OPTIONS = ['MILLARES', 'PIEZAS', 'CAJAS'];
@@ -191,7 +186,7 @@ export const EMPTY_COTIZACION = {
   cantidadValor: '',
   cantidadUnidad: 'MILLARES',
   cantidadKg: 0,
-  flete: '',
+  flete: 'FOB LAREDO',
   precioFlete: 0,
   idioma: 'ES',
   ancho: '',

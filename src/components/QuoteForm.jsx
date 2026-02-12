@@ -392,7 +392,7 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
                 (parseFloat(form.cantidadValor) || 0) * (parseFloat(form.cantidadPorCaja) || 0)
               } readOnly onChange={() => {}} />
             )}
-            <SelectField label={t.flete} value={form.flete} onChange={(v) => update('flete', v)} options={fleteOpts} />
+            <InputField label={t.flete} value="FOB LAREDO" readOnly onChange={() => {}} />
             <PriceField label={t.precioFlete} value={form.precioFlete} readOnly isManager={isManager} onChange={() => {}} />
           </div>
         </div>

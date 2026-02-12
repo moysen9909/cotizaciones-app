@@ -246,12 +246,12 @@ export const translations = {
 // Bilingual dropdown labels (value stays the same, label changes with language)
 export const DROPDOWN_LABELS = {
   tipo: {
-    ES: { BOLSA: 'BOLSA', POUCH: 'POUCH', ROLLO: 'ROLLO', MANGA: 'MANGA', 'LAMINACIÓN': 'LAMINACIÓN' },
-    EN: { BOLSA: 'BAG', POUCH: 'POUCH', ROLLO: 'ROLL', MANGA: 'SLEEVE', 'LAMINACIÓN': 'LAMINATION' },
+    ES: { BOLSA: 'BOLSA', POUCH: 'POUCH', PELICULA: 'PELICULA' },
+    EN: { BOLSA: 'BAG', POUCH: 'POUCH', PELICULA: 'FILM' },
   },
   flete: {
-    ES: { 'FOB PLANTA': 'FOB PLANTA', 'FOB CLIENTE': 'FOB CLIENTE', LAREDO: 'LAREDO', CLIENTE: 'CLIENTE' },
-    EN: { 'FOB PLANTA': 'FOB PLANT', 'FOB CLIENTE': 'FOB CUSTOMER', LAREDO: 'LAREDO', CLIENTE: 'CUSTOMER' },
+    ES: { 'FOB LAREDO': 'FOB LAREDO' },
+    EN: { 'FOB LAREDO': 'FOB LAREDO' },
   },
   cantidadUnidad: {
     ES: { MILLARES: 'MILLARES', PIEZAS: 'PIEZAS', CAJAS: 'CAJAS' },
