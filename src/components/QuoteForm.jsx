@@ -612,7 +612,7 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
           <h3 className={headingClass}>{t.accesorioCm}</h3>
           {(form.accesoriosCm || []).map((acc, i) => (
             <div key={i} className="grid grid-cols-4 gap-3 mb-2">
-              <SelectField label={`${t.accesorioCm} ${i+1}`} value={acc.nombre} onChange={(v) => handleAccCmChange(i,'nombre',v)} options={ACCESORIOS_CM.map(a=>a.nombre)} />
+              <SelectField label={`${t.accesorioCm} ${i+1}`} value={acc.nombre} onChange={(v) => handleAccCmChange(i,'nombre',v)} options={ACCESORIOS_CM.map(a=>({value:a.nombre,label:DROPDOWN_LABELS.accesoriosCm[lang]?.[a.nombre]||a.nombre}))} />
               <ToggleField label={t.activo} value={acc.activo?'SI':'NO'} onChange={(v)=>handleAccCmChange(i,'activo',v==='SI')} tSi={t.si} tNo={t.no} />
               <PriceField label={t.precio} value={acc.precio} isManager={isManager} onChange={(v)=>handleAccCmChange(i,'precio',parseFloat(v)||0)} />
               <PriceField label={t.total} value={acc.activo&&acc.precio?(acc.precio*getAnchoCm()*1000).toFixed(2):'0'} readOnly isManager={isManager} onChange={()=>{}} />
@@ -625,7 +625,7 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
           <h3 className={headingClass}>{t.accesorioMillar}</h3>
           {(form.accesoriosMillar || []).map((acc, i) => (
             <div key={i} className="grid grid-cols-3 gap-3 mb-2">
-              <SelectField label={`${t.accesorioMillar} ${i+1}`} value={acc.nombre} onChange={(v)=>handleAccMillarChange(i,'nombre',v)} options={ACCESORIOS_MILLAR.map(a=>a.nombre)} />
+              <SelectField label={`${t.accesorioMillar} ${i+1}`} value={acc.nombre} onChange={(v)=>handleAccMillarChange(i,'nombre',v)} options={ACCESORIOS_MILLAR.map(a=>({value:a.nombre,label:DROPDOWN_LABELS.accesoriosMillar[lang]?.[a.nombre]||a.nombre}))} />
               <ToggleField label={t.activo} value={acc.activo?'SI':'NO'} onChange={(v)=>handleAccMillarChange(i,'activo',v==='SI')} tSi={t.si} tNo={t.no} />
               <PriceField label={t.dolarMillar} value={acc.precio} isManager={isManager} onChange={(v)=>handleAccMillarChange(i,'precio',parseFloat(v)||0)} />
             </div>
@@ -637,7 +637,7 @@ export default function QuoteForm({ quote, clients, onSave, onDelete, onDuplicat
           <h3 className={headingClass}>{t.accesorioKg}</h3>
           {(form.accesoriosKg || []).map((acc, i) => (
             <div key={i} className="grid grid-cols-3 gap-3 mb-2">
-              <SelectField label={`${t.accesorioKg} ${i+1}`} value={acc.nombre} onChange={(v)=>handleAccKgChange(i,'nombre',v)} options={ACCESORIOS_KG.map(a=>a.nombre)} />
+              <SelectField label={`${t.accesorioKg} ${i+1}`} value={acc.nombre} onChange={(v)=>handleAccKgChange(i,'nombre',v)} options={ACCESORIOS_KG.map(a=>({value:a.nombre,label:DROPDOWN_LABELS.accesoriosKg[lang]?.[a.nombre]||a.nombre}))} />
               <ToggleField label={t.activo} value={acc.activo?'SI':'NO'} onChange={(v)=>handleAccKgChange(i,'activo',v==='SI')} tSi={t.si} tNo={t.no} />
               <PriceField label={t.dolarKg} value={acc.precio} isManager={isManager} onChange={(v)=>handleAccKgChange(i,'precio',parseFloat(v)||0)} />
             </div>
