@@ -56,7 +56,7 @@ export const translations = {
     calibreMaterial: 'Calibre & Material',
     complementos: 'Complementos',
     imagenes: 'Imágenes',
-    grabados: 'Grabados (Costo por Impresión)',
+    grabados: 'Placas (Costo por Impresión)',
     // Buttons & actions
     duplicar: 'Duplicar',
     agregar: 'Agregar',
@@ -175,7 +175,7 @@ export const translations = {
     calibreMaterial: 'Gauge & Material',
     complementos: 'Complements',
     imagenes: 'Images',
-    grabados: 'Engraving (Print Cost)',
+    grabados: 'Plates (Print Cost)',
     // Buttons & actions
     duplicar: 'Duplicate',
     agregar: 'Add',
