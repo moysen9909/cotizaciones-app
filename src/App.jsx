@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { LogOut, Globe, User, Shield, Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import Login from './components/Login';
@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar';
 import QuoteForm from './components/QuoteForm';
 import { translations } from './data/translations';
 import { EMPTY_COTIZACION, MATERIAL_DENSITIES } from './data/constants';
+import { saveQuotes, saveClients, loadQuotes, loadClients, onQuotesChange, onClientsChange } from './firebase';
 
 const STORAGE_QUOTES = 'cotizaciones_data';
 const STORAGE_CLIENTS = 'cotizaciones_clientes';
@@ -22,31 +23,75 @@ function load(key, fallback) {
 export default function App() {
   const [role, setRole] = useState(null);
   const [lang, setLang] = useState('ES');
-  const [quotes, setQuotes] = useState(() => {
-    const data = load(STORAGE_QUOTES, []);
-    // One-time migration: move all manager quotes to user visibility
-    if (!localStorage.getItem('migration_manager_to_user_done')) {
-      const migrated = data.map(q => q.createdByRole === 'manager' ? { ...q, createdByRole: 'user' } : q);
-      localStorage.setItem('migration_manager_to_user_done', '1');
-      localStorage.setItem(STORAGE_QUOTES, JSON.stringify(migrated));
-      return migrated;
-    }
-    // One-time migration: set all existing quotes to inches
-    if (!localStorage.getItem('migration_unidad_inches_done')) {
-      const migrated = data.map(q => ({ ...q, unidadMedida: 'IN' }));
-      localStorage.setItem('migration_unidad_inches_done', '1');
-      localStorage.setItem(STORAGE_QUOTES, JSON.stringify(migrated));
-      return migrated;
-    }
-    return data;
-  });
-  const [clients, setClients] = useState(() => load(STORAGE_CLIENTS, []));
+  const [quotes, setQuotes] = useState([]);
+  const [clients, setClients] = useState([]);
   const [activeId, setActiveId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const skipFireSync = useRef(false);
 
   const t = translations[lang];
 
-  useEffect(() => { localStorage.setItem(STORAGE_QUOTES, JSON.stringify(quotes)); }, [quotes]);
-  useEffect(() => { localStorage.setItem(STORAGE_CLIENTS, JSON.stringify(clients)); }, [clients]);
+  /* ── Load data: Firestore first, localStorage fallback, then migrate ── */
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      let q = await loadQuotes();
+      let c = await loadClients();
+
+      // If Firestore is empty, try localStorage and migrate
+      if (!q || q.length === 0) {
+        q = load(STORAGE_QUOTES, []);
+        // Run migrations on localStorage data
+        if (q.length > 0) {
+          q = q.map(item => item.createdByRole === 'manager' ? { ...item, createdByRole: 'user' } : item);
+          q = q.map(item => item.unidadMedida ? item : { ...item, unidadMedida: 'IN' });
+          // Push to Firestore
+          await saveQuotes(q);
+        }
+      }
+      if (!c || c.length === 0) {
+        c = load(STORAGE_CLIENTS, []);
+        if (c.length > 0) await saveClients(c);
+      }
+
+      if (mounted) {
+        setQuotes(q || []);
+        setClients(c || []);
+        setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  /* ── Real-time sync from Firestore ── */
+  useEffect(() => {
+    const unsub1 = onQuotesChange((data) => {
+      if (!skipFireSync.current) setQuotes(data);
+    });
+    const unsub2 = onClientsChange((data) => {
+      if (!skipFireSync.current) setClients(data);
+    });
+    return () => { unsub1(); unsub2(); };
+  }, []);
+
+  /* ── Save to Firestore + localStorage on changes ── */
+  const isInitial = useRef(true);
+  useEffect(() => {
+    if (loading) return;
+    if (isInitial.current) { isInitial.current = false; return; }
+    localStorage.setItem(STORAGE_QUOTES, JSON.stringify(quotes));
+    skipFireSync.current = true;
+    saveQuotes(quotes).finally(() => { skipFireSync.current = false; });
+  }, [quotes, loading]);
+
+  const isInitialC = useRef(true);
+  useEffect(() => {
+    if (loading) return;
+    if (isInitialC.current) { isInitialC.current = false; return; }
+    localStorage.setItem(STORAGE_CLIENTS, JSON.stringify(clients));
+    skipFireSync.current = true;
+    saveClients(clients).finally(() => { skipFireSync.current = false; });
+  }, [clients, loading]);
 
   /* ── Client system ── */
   const addClient = useCallback((name) => {
@@ -319,6 +364,25 @@ export default function App() {
   }, []);
 
   const activeQuote = visibleQuotes.find((q) => q.id === activeId);
+
+  if (loading) return (
+    <div className="h-screen flex items-center justify-center bg-ivory">
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative">
+          <div className="absolute inset-0 bg-navy rounded-3xl blur-md scale-110 opacity-80" />
+          <div className="relative bg-navy rounded-2xl px-10 py-6">
+            <img src="/logo.png" alt="Multibolsas" className="h-16 opacity-90" />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 mt-4">
+          <div className="w-2 h-2 bg-navy rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-2 h-2 bg-navy rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-2 h-2 bg-navy rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        </div>
+        <p className="text-sm text-mist/70 font-light">Cargando datos...</p>
+      </div>
+    </div>
+  );
 
   if (!role) return <Login onLogin={setRole} t={t} />;
 
